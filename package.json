@@ -3,6 +3,7 @@
   "description": "Persist the current VM disk image for later runs",
   "version": "0.0.0",
   "author": "",
+  "type": "module",
   "private": true,
   "homepage": "https://github.com/forrest-runner/persist",
   "repository": {
