@@ -1,0 +1,44 @@
+name: Run
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run-persist:
+    name: Run Action
+    runs-on: [self-hosted, forrest, test-debian]
+
+    outputs:
+      cookie: ${{ steps.hide.outputs.cookie }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Hide Random Cookie in Image
+        id: hide
+        run: |
+          COOKIE="$(uuidgen -r)"
+          echo "${COOKIE}" > ~/cookie
+          echo "Hid cookie: ${COOKIE}"
+          echo "cookie=${COOKIE}" >> "$GITHUB_OUTPUT"
+
+      - name: Persist Disk Image
+        uses: ./
+        with:
+          token: ${{ secrets.PERSISTENCE_TOKEN }}
+
+  check-persist:
+    name: Check Action
+    needs: run-persist
+    runs-on: [self-hosted, forrest, test-debian-persisted]
+
+    steps:
+      - name: Check for Cookie in Image
+        run: |
+          COOKIE="$(cat ~/cookie)"
+          echo "Found cookie: ${COOKIE}"
+
+          test "${COOKIE}" == "${{ needs.run-persist.outputs.cookie }}"
