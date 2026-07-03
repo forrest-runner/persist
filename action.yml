@@ -12,5 +12,12 @@ inputs:
     required: true
 
 runs:
-  using: node24
-  main: dist/index.js
+  using: composite
+  steps:
+    - name: Trim disk
+      shell: bash
+      run: sudo fstrim /
+
+    - name: Write persistence token
+      shell: bash
+      run: echo "${{ inputs.token }}" > /home/runner/config/persist
